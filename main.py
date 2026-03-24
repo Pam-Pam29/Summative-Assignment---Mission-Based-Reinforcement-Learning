@@ -1,15 +1,14 @@
 """
 main.py — Sista Health RL
 ===========================
-Loads the best performing model and runs it
-with the pygame visualization. Use this for
-your video recording.
+Loads the best-performing model and runs it
+with the pygame visualisation. 
 
 Usage:
  python main.py --algo ppo # run best PPO (default)
  python main.py --algo dqn # run best DQN
  python main.py --algo reinforce # run best REINFORCE
- python main.py --episodes 5 # number of episodes to show
+ python main.py --episodes 5 
 """
 
 import os
