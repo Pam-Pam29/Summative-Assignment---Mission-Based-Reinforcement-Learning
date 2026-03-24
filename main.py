@@ -22,9 +22,9 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 from environment.custom_env import SistaHealthEnv
 
 MODEL_PATHS = {
- "ppo": "models/pg/best_ppo_model",
+ "ppo": "models/pg/ppo/best_ppo_model",
  "dqn": "models/dqn/best_dqn_model",
- "reinforce": "models/pg/best_reinforce_model",
+ "reinforce": "models/pg/reinforce/best_reinforce_model",
 }
 
 
