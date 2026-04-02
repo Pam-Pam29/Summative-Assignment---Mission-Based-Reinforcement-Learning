@@ -54,14 +54,16 @@ def draw_rounded_rect(surface, color, rect, radius):
 def render_frame(env):
     import pygame
 
-    if env.screen is None:
+    # FIX 3: Safely initialise screen and clock on env if not already present
+    if not hasattr(env, 'screen') or env.screen is None:
         pygame.init()
         pygame.display.init()
         env.screen = pygame.display.set_mode((WINDOW_W, WINDOW_H))
         pygame.display.set_caption("Sista Health - RL Agent")
         env.clock = pygame.time.Clock()
-        if not hasattr(env, '_chat_history'):
-            env._chat_history = []
+
+    if not hasattr(env, '_chat_history'):
+        env._chat_history = []
 
     try:
         font_title  = pygame.font.SysFont("Arial", 17, bold=True)
@@ -133,6 +135,7 @@ def render_frame(env):
         av_surf     = font_large.render("S", True, (255, 255, 255))
         name_surf   = font_title.render(
             f"Sista Health  ({info['language']})", True, (255, 255, 255))
+        # FIX 1: state[4] is the step index (0-4), not state[5]
         status_surf = font_small.render(
             f"online  |  {info['domain']}  |  Step {info['step']}/9",
             True, (160, 220, 180))
@@ -158,18 +161,17 @@ def render_frame(env):
     if env.last_action is not None and env.state is not None:
         info = env._get_info()
         msg = {
-            "step":        int(env.state[5]),
+            # FIX 1: state index 4 is step, not 5
+            "step":        int(env.state[4]),
             "action":      env.last_action,
             "action_name": env.ACTIONS[env.last_action],
             "reward":      env.last_reward,
             "feedback":    env.last_feedback,
             "language":    info["language"],
-            "urgency":     info["urgency"],
+            # FIX 2: urgency doesn't exist in _get_info(); use literacy instead
             "literacy":    info["literacy"],
             "topic":       info["topic"],
         }
-        if not hasattr(env, '_chat_history'):
-            env._chat_history = []
         if len(env._chat_history) == 0 or \
            env._chat_history[-1]["step"] != msg["step"]:
             env._chat_history.append(msg)
@@ -184,7 +186,8 @@ def render_frame(env):
             reward_sign  = "+" if msg["reward"] >= 0 else ""
 
             # User bubble (left)
-            user_text = f"{msg['language']} user  |  {msg['topic'][:22]}  |  {msg['urgency']}"
+            # FIX 2: replaced msg["urgency"] with msg["literacy"]
+            user_text = f"{msg['language']} user  |  {msg['topic'][:22]}  |  Literacy: {msg['literacy']}"
             user_surf = font_small.render(user_text, True, WA_DARK_TEXT)
             user_w    = user_surf.get_width() + 24
             user_h    = 36
@@ -255,12 +258,14 @@ def render_frame(env):
         bar_h = 10
         pygame.draw.rect(surface, (255, 255, 255),
                          (bar_x, bar_y, bar_w, bar_h), border_radius=5)
-        fill_w = int(bar_w * (int(env.state[5]) / 10))
+        # FIX 1: state[4] is step, not state[5]
+        fill_w = int(bar_w * (int(env.state[4]) / 10))
         if fill_w > 0:
             pygame.draw.rect(surface, WA_GREEN,
                              (bar_x, bar_y, fill_w, bar_h), border_radius=5)
         step_lbl = font_small.render(
-            f"Step {int(env.state[5])}/10", True, (200, 230, 200))
+            # FIX 1: state[4] is step, not state[5]
+            f"Step {int(env.state[4])}/10", True, (200, 230, 200))
         surface.blit(step_lbl, (bar_x, stats_y + 8))
 
         algo_surf = font_small.render("PPO Agent", True, (200, 230, 200))

@@ -33,8 +33,7 @@ def run_random_episode(env, episode_num):
     print(f"    Language : {info['language']}")
     print(f"    Domain   : {info['domain']}")
     print(f"    Topic    : {info['topic']}")
-    print(f"    Urgency  : {info['urgency']}")
-    print(f"    Literacy : {info['literacy']}")
+    print(f"    Literacy : {info['literacy']}")   # FIX 1: removed info['urgency']
     print(f"{'─'*60}")
     print(f"  {'Step':<6} {'Action':<22} {'Reward':<10} {'Feedback'}")
     print(f"{'─'*60}")
@@ -73,9 +72,12 @@ def main():
     print("  Agent: Random (no training, no model)")
     print("="*60)
     print("\n  Environment Overview:")
-    print("  - Observation: language, domain, topic, urgency, literacy, step")
-    print("  - Actions:     Text Response | Voice Note | Emergency Referral | Clarify")
-    print("  - Episodes:    Max 10 steps or emergency termination")
+    # FIX 2: removed urgency from observation list
+    print("  - Observation: language, domain, topic, literacy, step")
+    # FIX 3: action 2 is Resource Link, not Emergency Referral
+    print("  - Actions:     Text Response | Voice Note | Resource Link | Clarify")
+    # FIX 5: no emergency termination, exactly 10 steps
+    print("  - Episodes:    Max 10 steps")
     print("  - Purpose:     Shows environment dynamics without learning")
 
     env = SistaHealthEnv()
@@ -95,7 +97,7 @@ def main():
     print(f"  Worst episode: {min(all_rewards):.1f}")
     print(f"{'─'*60}")
     print(f"  NOTE: Random agent scores near 0 because it has no")
-    print(f"  policy. Trained agents score 46-67 on this environment.")
+    print(f"  policy. Trained agents score 103-114 on this environment.")  # FIX 4: matches actual results
     print(f"  Run: python main.py --algo ppo to see trained behaviour.")
     print(f"{'='*60}\n")
 

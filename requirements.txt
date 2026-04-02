@@ -5,6 +5,9 @@ numpy==1.26.4
 pandas==2.2.1
 matplotlib==3.8.3
 torch>=2.0.0
-sb3-contrib==2.3.0
 fastapi==0.110.0
 uvicorn==0.29.0
+scipy>=1.11.0
+httpx>=0.27.0
+python-multipart>=0.0.9
+sb3-contrib==2.3.0

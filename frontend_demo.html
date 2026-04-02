@@ -458,14 +458,7 @@
                 </select>
             </div>
 
-            <div class="field-group">
-                <label>Urgency</label>
-                <select id="urgency">
-                    <option value="0">Low</option>
-                    <option value="1">Medium</option>
-                    <option value="2" selected>High</option>
-                </select>
-            </div>
+            <!-- FIX 5: Removed urgency field — not part of the observation space -->
 
             <div class="field-group">
                 <label>Literacy Level</label>
@@ -518,9 +511,8 @@
         const DOM_LABELS = { 0: "Sexual Health", 1: "Maternal Health" };
         const TOPIC_LABELS = { 0: "FGM Complications", 1: "VVF Causes", 2: "Cultural Barriers", 3: "Early Marriage", 4: "TBA Dangers", 5: "Contraception", 6: "STIs and HIV", 7: "Antenatal Care", 8: "Postpartum Care" };
         const LIT_LABELS = { 0: "Low", 1: "Medium", 2: "High" };
-        const URG_LABELS = { 0: "Low", 1: "Medium", 2: "High" };
 
-        // Reward hints based on action + literacy
+        // FIX 4: Corrected reward hints to match the actual environment reward function
         function rewardHint(action, literacy, language) {
             if (action === 0) return literacy === 2 ? "+10" : literacy === 1 ? "+5" : "-4";
             if (action === 1) {
@@ -529,8 +521,8 @@
                 if (literacy === 1) return pidgin ? "+9" : "+7";
                 return "+2";
             }
-            if (action === 2) return literacy === 0 ? "+4" : "+12";
-            if (action === 3) return "+6 to +8";
+            if (action === 2) return "+3";  // flat reward regardless of literacy
+            if (action === 3) return "Step < 3: +4  |  Step ≥ 3: -2";
             return "?";
         }
 
@@ -566,7 +558,6 @@
             return wrap;
         }
 
-        // Check API status on load
         async function checkStatus() {
             try {
                 const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(2000) });
@@ -587,29 +578,25 @@
             const lang = parseInt(document.getElementById('language').value);
             const domain = parseInt(document.getElementById('domain').value);
             const topic = parseInt(document.getElementById('topic').value);
-            const urgency = parseInt(document.getElementById('urgency').value);
             const literacy = parseInt(document.getElementById('literacy').value);
 
-            // Update curl display
-            const payload = { language: lang, domain, topic, urgency, literacy };
+            // FIX 5: Removed urgency from payload — not in observation space
+            const payload = { language: lang, domain, topic, literacy };
             document.getElementById('curlDisplay').textContent =
                 `curl -X POST ${API}/predict \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(payload)}'`;
 
-            // Remove empty state
             const empty = document.getElementById('emptyState');
             if (empty) empty.remove();
 
             const btn = document.getElementById('sendBtn');
             btn.disabled = true;
 
-            // User bubble
             addBubble(`
     <strong>${TOPIC_LABELS[topic]}</strong><br>
     <small style="color:#667781">Sending query as a ${LIT_LABELS[literacy]}-literacy ${LANG_LABELS[lang]} speaker...</small>
     <div class="profile-tags">
       <span class="tag">${LANG_LABELS[lang]}</span>
       <span class="tag">${DOM_LABELS[domain]}</span>
-      <span class="tag">Urgency: ${URG_LABELS[urgency]}</span>
       <span class="tag">Literacy: ${LIT_LABELS[literacy]}</span>
     </div>
     <div class="time">${getTime()} ✓✓</div>
@@ -656,7 +643,6 @@
             chatBody.scrollTop = chatBody.scrollHeight;
         }
 
-        // Allow Enter key to send
         document.addEventListener('keydown', e => { if (e.key === 'Enter') sendQuery(); });
 
         checkStatus();
