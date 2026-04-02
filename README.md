@@ -1,4 +1,4 @@
-#  Sista Health — Mission-Based Reinforcement Learning
+#  Sista Health- Mission-Based Reinforcement Learning
 
 **Victoria Fakunle | ALU 2026**
 
