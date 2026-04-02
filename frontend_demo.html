@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sista Health — RL Agent Demo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --green: #25D366;
+            --green-dark: #128C7E;
+            --green-light: #DCF8C6;
+            --teal: #075E54;
+            --bubble-out: #DCF8C6;
+            --bubble-in: #FFFFFF;
+            --bg: #ECE5DD;
+            --header-bg: #075E54;
+            --text: #111B21;
+            --muted: #667781;
+            --border: #D1D7DB;
+            --accent: #25D366;
+            --red: #FF5252;
+            --orange: #FF9800;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: #1a1a2e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-wrapper {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        /* ── Left panel: controls ── */
+        .controls {
+            background: #16213e;
+            border-radius: 20px;
+            padding: 28px;
+            width: 340px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .controls h2 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+
+        .controls .subtitle {
+            color: #8892a4;
+            font-size: 12px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .field-group {
+            margin-bottom: 18px;
+        }
+
+        .field-group label {
+            display: block;
+            color: #a0aec0;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 8px;
+        }
+
+        .field-group select {
+            width: 100%;
+            background: #0f3460;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Inter', sans-serif;
+            padding: 10px 14px;
+            appearance: none;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .field-group select:focus {
+            border-color: var(--green);
+        }
+
+        .send-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: opacity 0.2s, transform 0.1s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .send-btn:hover {
+            opacity: 0.92;
+        }
+
+        .send-btn:active {
+            transform: scale(0.98);
+        }
+
+        .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .api-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 20px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.04);
+            font-size: 12px;
+            color: #8892a4;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #8892a4;
+            flex-shrink: 0;
+        }
+
+        .status-dot.online {
+            background: var(--green);
+            box-shadow: 0 0 6px var(--green);
+        }
+
+        .status-dot.offline {
+            background: var(--red);
+        }
+
+        .curl-box {
+            margin-top: 16px;
+            background: #0a0a1a;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 11px;
+            color: #6ee7b7;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            word-break: break-all;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .curl-box .label {
+            color: #8892a4;
+            font-size: 10px;
+            margin-bottom: 6px;
+            font-family: 'Inter', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        /* ── Right panel: WhatsApp chat ── */
+        .phone {
+            flex: 1;
+            background: var(--bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            height: 680px;
+            min-width: 320px;
+        }
+
+        .phone-header {
+            background: var(--header-bg);
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+        }
+
+        .avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #25D366, #128C7E);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .header-info h3 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .header-info span {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 12px;
+        }
+
+        .chat-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='%23ECE5DD'/%3E%3Ccircle cx='30' cy='30' r='1' fill='%23D4C9C0' opacity='0.4'/%3E%3C/svg%3E");
+        }
+
+        .chat-body::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .chat-body::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+        }
+
+        .bubble-wrap {
+            display: flex;
+            flex-direction: column;
+            animation: fadeUp 0.3s ease;
+        }
+
+        @keyframes fadeUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bubble-wrap.outgoing {
+            align-items: flex-end;
+        }
+
+        .bubble-wrap.incoming {
+            align-items: flex-start;
+        }
+
+        .bubble {
+            max-width: 78%;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            color: var(--text);
+        }
+
+        .bubble-wrap.outgoing .bubble {
+            background: var(--bubble-out);
+            border-bottom-right-radius: 4px;
+        }
+
+        .bubble-wrap.incoming .bubble {
+            background: var(--bubble-in);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .bubble .time {
+            font-size: 10px;
+            color: var(--muted);
+            text-align: right;
+            margin-top: 4px;
+        }
+
+        .bubble .action-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--teal);
+            color: #fff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            margin: 8px 0 4px;
+        }
+
+        .bubble .reward-line {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        .bubble .reward-line.positive {
+            color: #2e7d32;
+            font-weight: 600;
+        }
+
+        .bubble .reward-line.negative {
+            color: #c62828;
+            font-weight: 600;
+        }
+
+        .bubble .profile-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .bubble .tag {
+            background: rgba(7, 94, 84, 0.08);
+            color: var(--teal);
+            border-radius: 6px;
+            padding: 2px 8px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .system-msg {
+            text-align: center;
+            color: var(--muted);
+            font-size: 11px;
+            background: rgba(255, 255, 255, 0.6);
+            padding: 4px 12px;
+            border-radius: 8px;
+            align-self: center;
+        }
+
+        .typing {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+            background: var(--bubble-in);
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            width: fit-content;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .typing span {
+            width: 7px;
+            height: 7px;
+            background: var(--muted);
+            border-radius: 50%;
+            animation: bounce 1.2s infinite;
+        }
+
+        .typing span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes bounce {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-6px);
+            }
+        }
+
+        .empty-state {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--muted);
+            font-size: 13px;
+            gap: 10px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .empty-state .icon {
+            font-size: 48px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-wrapper">
+
+        <!-- Controls -->
+        <div class="controls">
+            <h2>🩺 Sista Health</h2>
+            <p class="subtitle">RL Agent Demo — PPO model selects the optimal response format for each user profile.</p>
+
+            <div class="field-group">
+                <label>Language</label>
+                <select id="language">
+                    <option value="0">🇬🇧 English</option>
+                    <option value="1">🇳🇬 Yoruba</option>
+                    <option value="2" selected>🇳🇬 Pidgin</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Health Domain</label>
+                <select id="domain">
+                    <option value="0">Sexual Health</option>
+                    <option value="1" selected>Maternal Health</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Topic</label>
+                <select id="topic">
+                    <option value="0">FGM Complications</option>
+                    <option value="1">VVF Causes</option>
+                    <option value="2">Cultural Barriers</option>
+                    <option value="3" selected>Early Marriage</option>
+                    <option value="4">TBA Dangers</option>
+                    <option value="5">Contraception</option>
+                    <option value="6">STIs and HIV</option>
+                    <option value="7">Antenatal Care</option>
+                    <option value="8">Postpartum Care</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Urgency</label>
+                <select id="urgency">
+                    <option value="0">Low</option>
+                    <option value="1">Medium</option>
+                    <option value="2" selected>High</option>
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label>Literacy Level</label>
+                <select id="literacy">
+                    <option value="0" selected>Low</option>
+                    <option value="1">Medium</option>
+                    <option value="2">High</option>
+                </select>
+            </div>
+
+            <button class="send-btn" id="sendBtn" onclick="sendQuery()">
+                Send Query to Agent →
+            </button>
+
+            <div class="api-status">
+                <div class="status-dot" id="statusDot"></div>
+                <span id="statusText">Checking API...</span>
+            </div>
+
+            <div class="curl-box">
+                <div class="label">Live curl equivalent</div>
+                <span id="curlDisplay">Select options and send a query.</span>
+            </div>
+        </div>
+
+        <!-- WhatsApp Chat -->
+        <div class="phone">
+            <div class="phone-header">
+                <div class="avatar">🩺</div>
+                <div class="header-info">
+                    <h3>Sista Health Agent</h3>
+                    <span>PPO · best_ppo_model.zip · Run 1</span>
+                </div>
+            </div>
+
+            <div class="chat-body" id="chatBody">
+                <div class="empty-state" id="emptyState">
+                    <div class="icon">💬</div>
+                    <div>Select a user profile on the left<br>and send a query to see the agent respond.</div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API = "http://127.0.0.1:8000";
+
+        const LANG_LABELS = { 0: "English", 1: "Yoruba", 2: "Pidgin" };
+        const DOM_LABELS = { 0: "Sexual Health", 1: "Maternal Health" };
+        const TOPIC_LABELS = { 0: "FGM Complications", 1: "VVF Causes", 2: "Cultural Barriers", 3: "Early Marriage", 4: "TBA Dangers", 5: "Contraception", 6: "STIs and HIV", 7: "Antenatal Care", 8: "Postpartum Care" };
+        const LIT_LABELS = { 0: "Low", 1: "Medium", 2: "High" };
+        const URG_LABELS = { 0: "Low", 1: "Medium", 2: "High" };
+
+        // Reward hints based on action + literacy
+        function rewardHint(action, literacy, language) {
+            if (action === 0) return literacy === 2 ? "+10" : literacy === 1 ? "+5" : "-4";
+            if (action === 1) {
+                const pidgin = language === 2;
+                if (literacy === 0) return pidgin ? "+16 (max!)" : "+14";
+                if (literacy === 1) return pidgin ? "+9" : "+7";
+                return "+2";
+            }
+            if (action === 2) return literacy === 0 ? "+4" : "+12";
+            if (action === 3) return "+6 to +8";
+            return "?";
+        }
+
+        function getTime() {
+            return new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        function addSystemMsg(text) {
+            const el = document.createElement('div');
+            el.className = 'system-msg';
+            el.textContent = text;
+            chatBody.appendChild(el);
+        }
+
+        function addBubble(html, outgoing) {
+            const wrap = document.createElement('div');
+            wrap.className = `bubble-wrap ${outgoing ? 'outgoing' : 'incoming'}`;
+            const bub = document.createElement('div');
+            bub.className = 'bubble';
+            bub.innerHTML = html;
+            wrap.appendChild(bub);
+            chatBody.appendChild(wrap);
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        function addTyping() {
+            const wrap = document.createElement('div');
+            wrap.className = 'bubble-wrap incoming';
+            wrap.id = 'typingBubble';
+            wrap.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+            chatBody.appendChild(wrap);
+            chatBody.scrollTop = chatBody.scrollHeight;
+            return wrap;
+        }
+
+        // Check API status on load
+        async function checkStatus() {
+            try {
+                const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(2000) });
+                const d = await r.json();
+                document.getElementById('statusDot').className = 'status-dot online';
+                document.getElementById('statusText').textContent = d.model_loaded
+                    ? 'API online · PPO model loaded'
+                    : 'API online · model not loaded';
+            } catch {
+                document.getElementById('statusDot').className = 'status-dot offline';
+                document.getElementById('statusText').textContent = 'API offline — run: uvicorn api:app --reload';
+            }
+        }
+
+        const chatBody = document.getElementById('chatBody');
+
+        async function sendQuery() {
+            const lang = parseInt(document.getElementById('language').value);
+            const domain = parseInt(document.getElementById('domain').value);
+            const topic = parseInt(document.getElementById('topic').value);
+            const urgency = parseInt(document.getElementById('urgency').value);
+            const literacy = parseInt(document.getElementById('literacy').value);
+
+            // Update curl display
+            const payload = { language: lang, domain, topic, urgency, literacy };
+            document.getElementById('curlDisplay').textContent =
+                `curl -X POST ${API}/predict \\\n  -H "Content-Type: application/json" \\\n  -d '${JSON.stringify(payload)}'`;
+
+            // Remove empty state
+            const empty = document.getElementById('emptyState');
+            if (empty) empty.remove();
+
+            const btn = document.getElementById('sendBtn');
+            btn.disabled = true;
+
+            // User bubble
+            addBubble(`
+    <strong>${TOPIC_LABELS[topic]}</strong><br>
+    <small style="color:#667781">Sending query as a ${LIT_LABELS[literacy]}-literacy ${LANG_LABELS[lang]} speaker...</small>
+    <div class="profile-tags">
+      <span class="tag">${LANG_LABELS[lang]}</span>
+      <span class="tag">${DOM_LABELS[domain]}</span>
+      <span class="tag">Urgency: ${URG_LABELS[urgency]}</span>
+      <span class="tag">Literacy: ${LIT_LABELS[literacy]}</span>
+    </div>
+    <div class="time">${getTime()} ✓✓</div>
+  `, true);
+
+            const typingEl = addTyping();
+
+            try {
+                const res = await fetch(`${API}/predict`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: AbortSignal.timeout(5000)
+                });
+                const data = await res.json();
+
+                typingEl.remove();
+
+                const reward = rewardHint(data.action, literacy, lang);
+                const isPositive = reward.startsWith('+');
+                const rewardClass = isPositive ? 'positive' : 'negative';
+
+                addBubble(`
+      <div style="font-size:12px;color:#667781;margin-bottom:6px">Agent recommendation:</div>
+      <div class="action-badge">${data.emoji} ${data.action_name}</div><br>
+      <div style="font-size:13px;color:#111B21;margin-bottom:6px">${data.description}</div>
+      <div class="reward-line ${rewardClass}">Estimated reward: ${reward}</div>
+      <div style="font-size:11px;color:#667781;margin-top:6px">Model: ${data.model_used}</div>
+      <div class="time">${getTime()}</div>
+    `, false);
+
+                checkStatus();
+
+            } catch (err) {
+                typingEl.remove();
+                addBubble(`
+      <div style="color:#c62828;font-weight:600">⚠️ Could not reach API</div>
+      <div style="font-size:12px;margin-top:4px;color:#667781">Make sure the server is running:<br><code>uvicorn api:app --reload</code></div>
+      <div class="time">${getTime()}</div>
+    `, false);
+            }
+
+            btn.disabled = false;
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        // Allow Enter key to send
+        document.addEventListener('keydown', e => { if (e.key === 'Enter') sendQuery(); });
+
+        checkStatus();
+        setInterval(checkStatus, 10000);
+    </script>
+</body>
+
+</html>
